@@ -111,7 +111,6 @@ def create_db_table():
         raise RuntimeError(f"Table creation failed: {str(e)}")
 
 def insert_data_into_db(payload):
-    
     """
     Insert a single event into the events table.
     """
@@ -123,18 +122,19 @@ def insert_data_into_db(payload):
                 INSERT INTO events (title, description, image_url, date, location)
                 VALUES (%s, %s, %s, %s, %s)
             """
-            cursor.execute(
-                insert_sql,
-                (
-                    payload.get("title"),
-                    payload.get("description"),
-                    payload.get("image_url"),
-                    payload.get("date"),
-                    payload.get("location")
-                )
-            )
+            cursor.execute(insert_sql, (
+                payload.get("title"),
+                payload.get("description"),
+                payload.get("image_url"),
+                payload.get("date"),
+                payload.get("location")
+            ))
         connection.commit()
         logging.info("Event inserted successfully")
+    except Exception:
+        connection.rollback()
+        logging.exception("Insert failed")
+        raise
     finally:
         connection.close()
 
@@ -143,6 +143,7 @@ def fetch_data_from_db():
     """
     Fetch all event records ordered by date ascending.
     """
+    create_db_table()
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
@@ -154,20 +155,19 @@ def fetch_data_from_db():
             cursor.execute(select_sql)
             results = cursor.fetchall()
 
-            data = []
-            for row in results:
-                data.append({
-                    "id": row[0],
-                    "title": row[1],
-                    "description": row[2],
-                    "image_url": row[3],
-                    "date": row[4].strftime("%Y-%m-%d") if row[4] else None,
-                    "location": row[5]
-                })
-            return data
+        data = []
+        for row in results:
+            data.append({
+                "id": row[0],
+                "title": row[1],
+                "description": row[2],
+                "image_url": row[3],
+                "date": row[4].strftime("%Y-%m-%d") if row[4] else None,
+                "location": row[5]
+            })
+        return data
     finally:
         connection.close()
-
         
 
 if __name__ == '__main__':
