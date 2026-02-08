@@ -45,12 +45,9 @@ def create_event():
 #Endpoint: Data Retrieval
 @application.route('/data', methods=['GET'])
 def get_data():
-    """
-    This endpoint should eventually provide data from the database.
-    """
     try:
         data = fetch_data_from_db()
-        return jsonify(data), 200   # ✅ return array directly
+        return jsonify({"data": data}), 200   # ✅ must be dict with "data"
     except NotImplementedError as nie:
         return jsonify({"error": str(nie)}), 501
     except Exception as e:
@@ -59,7 +56,8 @@ def get_data():
             "error": "During data retrieval",
             "detail": str(e)
         }), 500
-
+    
+    
 def get_db_connection():
     """
     Establish and return a connection to the RDS MySQL database.
