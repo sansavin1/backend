@@ -166,7 +166,7 @@ def fetch_data_from_db():
                 "title": row[1],
                 "description": row[2],
                 "image_url": row[3],
-                "date": row[4].strftime("%Y-%m-%d") if row[4] else None,
+                "date": row[4].strftime("%a, %d %b %Y 00:00:00 GMT") if row[4] else None,
                 "location": row[5]
             })
         return data
