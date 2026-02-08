@@ -47,12 +47,10 @@ def create_event():
 def get_data():
     """
     This endpoint should eventually provide data from the database.
-    The database communication is currently stubbed out.
-    You must implement the fetch_data_from_db() function to integrate with your MySQL RDS Instance.
     """
     try:
         data = fetch_data_from_db()
-        return jsonify({"data": data}), 200
+        return jsonify(data), 200   # ✅ return array directly
     except NotImplementedError as nie:
         return jsonify({"error": str(nie)}), 501
     except Exception as e:
