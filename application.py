@@ -87,24 +87,32 @@ def get_db_connection():
 def create_db_table():
     connection = get_db_connection()
     try:
-        with get_db_connection() as connection:
-            with connection.cursor() as cursor:
-                create_table_sql = """
+        with connection.cursor() as cursor:
+            # Create table if it doesn't exist
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS events (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     title VARCHAR(255) NOT NULL,
                     description TEXT,
-                    image_url VARCHAR(255),
+                    image_url TEXT,
                     date DATE NOT NULL,
                     location VARCHAR(255)
                 )
-                """
-                cursor.execute(create_table_sql)
-            connection.commit()
-            logging.info("Events table created or already exists")
+            """)
+
+            # Upgrade schema if table already existed with VARCHAR(255)
+            cursor.execute("""
+                ALTER TABLE events
+                MODIFY COLUMN image_url TEXT
+            """)
+        connection.commit()
+        logging.info("Events table created/verified and schema updated")
     except Exception as e:
+        connection.rollback()
         logging.exception("Failed to create or verify the events table")
         raise RuntimeError(f"Table creation failed: {str(e)}")
+    finally:
+        connection.close()
 
 def insert_data_into_db(payload):
     """
